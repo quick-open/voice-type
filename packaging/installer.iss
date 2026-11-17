@@ -56,11 +56,9 @@ BeveledLabel=QuickOpen · quickopen.ai
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional shortcuts:"
-Name: "trustca"; Description: "Trust the QuickOpen Root CA (lets Windows verify QuickOpen signatures)"; GroupDescription: "Security:"; Flags: unchecked
 
 [Files]
 Source: "staging\VoiceType.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "staging\quickopen-root.crt"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "staging\README.md"; DestDir: "{app}"; Flags: ignoreversion isreadme skipifsourcedoesntexist
 Source: "staging\LICENSE"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
@@ -70,8 +68,13 @@ Name: "{group}\Uninstall VoiceType"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\VoiceType"; Filename: "{app}\VoiceType.exe"; IconFilename: "{app}\VoiceType.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "certutil.exe"; Parameters: "-addstore -user Root ""{app}\quickopen-root.crt"""; Tasks: trustca; Flags: runhidden; StatusMsg: "Trusting the QuickOpen Root CA..."
+Filename: "certutil.exe"; Parameters: "-user -delstore Root 771eafedccb23be0c44f6484be967670369aefb0"; Flags: runhidden; StatusMsg: "Removing the retired QuickOpen Root CA..."
+Filename: "certutil.exe"; Parameters: "-delstore Root 771eafedccb23be0c44f6484be967670369aefb0"; Flags: runhidden; Check: IsAdminInstallMode
 Filename: "{app}\VoiceType.exe"; Description: "Launch VoiceType now"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+Filename: "certutil.exe"; Parameters: "-user -delstore Root 771eafedccb23be0c44f6484be967670369aefb0"; Flags: runhidden; RunOnceId: "QODelRetiredRootUser"
+Filename: "certutil.exe"; Parameters: "-delstore Root 771eafedccb23be0c44f6484be967670369aefb0"; Flags: runhidden; RunOnceId: "QODelRetiredRootMachine"; Check: IsAdminInstallMode
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{localappdata}\VoiceType"
